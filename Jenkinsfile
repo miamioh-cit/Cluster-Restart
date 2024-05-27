@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = 'roseaw/powercliimage'
+        DOCKER_IMAGE_NAME = 'roseaw/powercliimage2'
         DOCKER_IMAGE_TAG = 'latest'
         VCENTER_CREDENTIALS_ID = 'taylorw8-vsphere'
     }
@@ -34,7 +34,7 @@ pipeline {
                             -e VCENTER_USER=\$VCENTER_USER \
                             -e VCENTER_PASS=\$VCENTER_PASS \
                             ${env.DOCKER_IMAGE_NAME}:${env.DOCKER_IMAGE_TAG} \
-                            pwsh -File /usr/src/app/Restart-VMs.ps1 -vCenterServer 'vcenter.regional.miamioh.edu' -vCenterUser \$VCENTER_USER -vCenterPass \$VCENTER_PASS
+                            pwsh -File /usr/src/app/Restart-VMs.ps1 -vCenterServer 'cit-vc.regionals.miamioh.edu' -vCenterUser \$VCENTER_USER -vCenterPass \$VCENTER_PASS
                         """
                     }
                 }
