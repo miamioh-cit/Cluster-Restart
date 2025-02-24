@@ -10,27 +10,39 @@ Set-PowerCLIConfiguration -InvalidCertificateAction Ignore -Confirm:$false -Scop
 # Connect to the vCenter Server using the provided credentials
 Connect-VIServer -Server $vCenterServer -User $vCenterUser -Password $vCenterPass
 
-# List of VMs to restart
-$vmList = @(
-    "babbam2-225", "brunsojc-225", "chengrl-225", "dayam-225", "flohreh-225", "gartnea-225", "grimesdl-225", 
-    "henderbl-225", "hendris3-225", "hunterds-225", "lehmanjb-225", "mccurdca-225", "mosinsmj-225", "nyamusjj-225",
-    "rain-225", "roseaw-225", "sandlizh-225", "singleb-225", "tanl4-225", "taylo271-225", "taylorw8-225", "walshnj-225", "wanes-225"
-)
+# Define the target folder name
+$folderName = "DevOps"
 
-# Loop through each VM name and restart the VM if found
-foreach ($vmName in $vmList) {
-    try {
-        $vm = Get-VM -Name $vmName
-        if ($vm -ne $null) {
-            Write-Host "Restarting VM: $vmName"
-            Restart-VMGuest -VM $vm -Confirm:$false
-        } else {
-            Write-Host "VM not found: $vmName"
-        }
-    } catch {
-        Write-Host "Error processing VM: $vmName. Error: $_"
+try {
+    # Get the folder object
+    $folder = Get-Folder -Name $folderName
+
+    if ($folder -eq $null) {
+        Write-Host "Folder '$folderName' not found in vCenter."
+        Disconnect-VIServer -Server $vCenterServer -Confirm:$false
+        exit
     }
+
+    # Get all VMs inside the folder
+    $vmList = Get-VM -Location $folder
+
+    if ($vmList.Count -eq 0) {
+        Write-Host "No VMs found in folder '$folderName'."
+    } else {
+        # Loop through each VM and restart it
+        foreach ($vm in $vmList) {
+            try {
+                Write-Host "Restarting VM: $($vm.Name)"
+                Restart-VMGuest -VM $vm -Confirm:$false
+            } catch {
+                Write-Host "Error restarting VM: $($vm.Name). Error: $_"
+            }
+        }
+    }
+
+} catch {
+    Write-Host "Error accessing vCenter or folder. Error: $_"
 }
 
-# Disconnect from the vCenter Server after operations
+# Disconnect from the vCenter Server
 Disconnect-VIServer -Server $vCenterServer -Confirm:$false
